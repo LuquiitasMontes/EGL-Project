@@ -9,7 +9,7 @@ public class QuestWebSocketClient : MonoBehaviour
 	private InputData _inputData;
     private WebSocket ws;
     public TextMeshProUGUI mytexto;
-    public string serverUrl = "ws://192.168.0.175:81"; // Cambia esto a tu servidor WebSocket
+    public string serverUrl = "ws://192.168.56.95:81"; // Cambia esto a tu servidor WebSocket
     public double sensitivity = 0.95;
 
     void Start()
@@ -33,7 +33,7 @@ public class QuestWebSocketClient : MonoBehaviour
 			if (_inputData._rightController.TryGetFeatureValue(CommonUsages.primaryButton, out isPressed_A) && isPressed_A)
 				{
     // El botón primario fue presionado
-	      			ws.Send("Puto");
+	      			ws.Send("A");
 	      			mytexto.SetText("A");
 
         		}

@@ -1,0 +1,17 @@
+E:\Users\lucas\Documents\GitHub\EGL-Project\baka_to_test\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\GameActivity\GAToUnityCallbacks.h
+E:\Users\lucas\Documents\GitHub\EGL-Project\baka_to_test\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\GameActivity\MacroEnd.h
+E:\Users\lucas\Documents\GitHub\EGL-Project\baka_to_test\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\GameActivity\MacroHeaderBegin.h
+E:\Users\lucas\Documents\GitHub\EGL-Project\baka_to_test\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\GameActivity\MacroSourceBegin.h
+E:\Users\lucas\Documents\GitHub\EGL-Project\baka_to_test\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\GameActivity\UGAApplication.h
+E:\Users\lucas\Documents\GitHub\EGL-Project\baka_to_test\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\GameActivity\UGAConfiguration.h
+E:\Users\lucas\Documents\GitHub\EGL-Project\baka_to_test\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\GameActivity\UGADebug.h
+E:\Users\lucas\Documents\GitHub\EGL-Project\baka_to_test\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\GameActivity\UGAEvents.h
+E:\Users\lucas\Documents\GitHub\EGL-Project\baka_to_test\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\GameActivity\UGAInput.h
+E:\Users\lucas\Documents\GitHub\EGL-Project\baka_to_test\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\GameActivity\UGASoftKeyboard.h
+E:\Users\lucas\Documents\GitHub\EGL-Project\baka_to_test\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\GameActivity\UGASoftKeyboardCallbacks.h
+E:\Users\lucas\Documents\GitHub\EGL-Project\baka_to_test\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\GameActivity\UGATypes.h
+E:\Users\lucas\Documents\GitHub\EGL-Project\baka_to_test\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\GameActivity\UGAVersion.h
+E:\Users\lucas\Documents\GitHub\EGL-Project\baka_to_test\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\GameActivity\UnityToGACallbacks.h
+E:\Users\lucas\Documents\GitHub\EGL-Project\baka_to_test\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\GameActivity\UnityToGAConfigurationCallbacks.h
+E:\Users\lucas\Documents\GitHub\EGL-Project\baka_to_test\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\GameActivity\UnityToGAKeyEventCallbacks.h
+E:\Users\lucas\Documents\GitHub\EGL-Project\baka_to_test\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\GameActivity\UnityToGAMotionEventCallbacks.h

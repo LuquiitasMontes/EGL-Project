@@ -1,0 +1,2 @@
+E:\Users\lucas\Documents\GitHub\EGL-Project\baka_to_test\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\CMakeLists.txt
+E:\Users\lucas\Documents\GitHub\EGL-Project\baka_to_test\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\GameActivity\CMakeLists.txt
