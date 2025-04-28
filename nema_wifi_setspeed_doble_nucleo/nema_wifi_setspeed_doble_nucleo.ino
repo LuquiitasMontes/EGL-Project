@@ -53,18 +53,16 @@ void setup() {
   server.listen(81);
   Serial.println("Servidor WebSocket iniciado.");
 
-  // Crear tareas
+  //Tareas
   xTaskCreatePinnedToCore(tareaServidor, "TareaServidor", 5000, NULL, 1, NULL, 1); // Core 1
   xTaskCreatePinnedToCore(tareaMotores, "TareaMotores", 5000, NULL, 1, NULL, 0);    // Core 0
 }
 
-void loop() {
-  // No se usa loop principal
-}
+void loop() {}
 
 void tareaServidor(void * pvParameters) {
   for(;;) {
-    server.poll();  // Siempre escuchar
+    server.poll();
 
     if (!cliente_conectado && server.poll()) {
       client = server.accept();
@@ -100,7 +98,7 @@ void tareaMotores(void * pvParameters) {
   for(;;) {
     motor1.runSpeed();
     motor2.runSpeed();
-    delay(1); // Ejecutar muy rápido
+    delay(1);
   }
 }
 
