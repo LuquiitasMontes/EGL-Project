@@ -993,7 +993,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mytexto: {fileID: 922935740}
-  serverUrl: ws://192.168.56.206:81
+  serverUrl: ws://192.168.202.206:81
   sensitivity: 0.95
 --- !u!1 &1119298605
 GameObject:
