@@ -931,7 +931,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1108169625}
-  - component: {fileID: 1108169627}
   - component: {fileID: 1108169629}
   - component: {fileID: 1108169630}
   m_Layer: 0
@@ -956,18 +955,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1108169627
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1108169623}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9d458cd6af843d443a83eb4f59923aec, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1108169629
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -993,8 +980,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mytexto: {fileID: 922935740}
-  serverUrl: ws://192.168.202.206:81
-  sensitivity: 0.95
+  udpPort: 8888
 --- !u!1 &1119298605
 GameObject:
   m_ObjectHideFlags: 0
