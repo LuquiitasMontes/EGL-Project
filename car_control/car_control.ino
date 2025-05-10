@@ -32,6 +32,7 @@ AccelStepper motor2(AccelStepper::DRIVER, STEP_PIN_M2, DIR_PIN_M2);
 // Velocidades
 volatile int velocidad_m1 = 0;
 volatile int velocidad_m2 = 0;
+int vel_value = 400;
 
 
 // Tareas
@@ -43,15 +44,13 @@ void procesarComando(String comando);
 void setup() {
   Serial.begin(115200);
 
-  // Motores
+  // Configs de motores
   motor1.setMaxSpeed(1500);
   motor2.setMaxSpeed(1500);
-
-  // Eliminar aceleración para respuesta inmediata (opcional)
   motor1.setAcceleration(0);
   motor2.setAcceleration(0);
 
-  // WiFi
+  // Conexión WiFi
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -91,7 +90,7 @@ void tareaServidor(void * pvParameters) {
       }
 
       if (!client.available()) {
-        // Cliente desconectado
+        // Frenar el carro en caso de desconexion
         cliente_conectado = false;
         Serial.println("Cliente desconectado.");
         velocidad_m1 = 0;
@@ -107,7 +106,6 @@ void tareaServidor(void * pvParameters) {
 
 void tareaMotores(void * pvParameters) {
   while(1) {
-
     motor1.runSpeed();
     motor2.runSpeed();
     delay(1); 
@@ -117,7 +115,7 @@ void tareaMotores(void * pvParameters) {
 void tareaBroadcast(void * pvParameters) {
   while(1) {
     if (seguir_broadcast) {
-      IPAddress ip = WiFi.localIP();
+      IPAddress ip = WiFi.localIP(); // Obtener direccion del esp32
       String msg = ip.toString();
       udp.beginPacket(IPAddress(255, 255, 255, 255), udpPort);
       udp.print(msg);
@@ -129,25 +127,26 @@ void tareaBroadcast(void * pvParameters) {
 }
 
 void procesarComando(String comando) {
+  //Hay que modificar esta lista de comandos para que sea más escalable o prolija
   if (comando == "F") {
-    velocidad_m1 = 400;
-    velocidad_m2 = -400;
+    velocidad_m1 = vel_value;
+    velocidad_m2 = -vel_value;
 
   } else if (comando == "B") {
-    velocidad_m1 = -400;
-    velocidad_m2 = 400;
+    velocidad_m1 = -vel_value;
+    velocidad_m2 = vel_value;
 
   } else if (comando == "A") {
     velocidad_m1 = 0;
     velocidad_m2 = 0;
 
   } else if (comando == "R") {
-    velocidad_m1 = -400;
-    velocidad_m2 = -400;
+    velocidad_m1 = -vel_value;
+    velocidad_m2 = -vel_value;
 
   } else if (comando == "L") {
-    velocidad_m1 = 400;
-    velocidad_m2 = 400;
+    velocidad_m1 = vel_value;
+    velocidad_m2 = vel_value;
 
   } else if (comando == "car connected") {
     seguir_broadcast = false;
@@ -155,8 +154,7 @@ void procesarComando(String comando) {
   } else {
     Serial.println("Comando no reconocido.");
   }
-
-
+  // Configurar velocidades
   motor1.setSpeed(velocidad_m1);
   motor2.setSpeed(velocidad_m2);
 }

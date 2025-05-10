@@ -42,7 +42,7 @@ public class QuestWebSocketClient : MonoBehaviour
                 Debug.Log("IP recibida por UDP: " + receivedIp);
                 mytexto.text = "ESP IP: " + receivedIp;
 
-                // Iniciar WebSocket
+                // Iniciar conexion con WebSocket
                 ConnectToWebSocket("ws://" + receivedIp + ":81");
 
             }
@@ -83,6 +83,12 @@ public class QuestWebSocketClient : MonoBehaviour
 
     void Update()
     {
+        // No me gusta mucho como quedo este control, voy a intentar mejorarlo despues de los finales
+        // Cosas que arreglar:
+        // 1. Enviar mensajes en flancos de cambio
+        // 2. Dejar de enviar mensaje al recibir una confirmacion desde el esp32
+        // 3. Tener en cuenta la sensibilidad del joystick
+        // 4. Por alguna razon cuesta mas que registre los extremos cuando operas el carro
         if (!websocketConnected) return;
 
         bool isPressed_A;
