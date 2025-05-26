@@ -32,7 +32,7 @@ AccelStepper motor2(AccelStepper::DRIVER, STEP_PIN_M2, DIR_PIN_M2);
 // Velocidades
 volatile int velocidad_m1 = 0;
 volatile int velocidad_m2 = 0;
-int vel_value = 400;
+int vel_value = 1000;
 
 
 // Tareas
