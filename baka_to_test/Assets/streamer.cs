@@ -14,6 +14,9 @@ public class MJPEGStreamWithAutoIP : MonoBehaviour
     public Renderer targetRenderer;
     public int streamPort = 8080;
 
+    [Header("Conection Settings")]
+    private int timeout_in = 2;
+
     private Texture2D videoTexture;
     private string cameraIP;
     private bool found = false;
@@ -82,7 +85,7 @@ public class MJPEGStreamWithAutoIP : MonoBehaviour
 
         using (UnityWebRequest request = UnityWebRequest.Head(testUrl))
         {
-            request.timeout = 2;
+            request.timeout = timeout_in;
 
             yield return request.SendWebRequest();
 
