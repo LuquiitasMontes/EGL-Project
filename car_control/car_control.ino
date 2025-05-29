@@ -92,6 +92,7 @@ void tareaServidor(void * pvParameters) {
       if (!client.available()) {
         // Frenar el carro en caso de desconexion
         cliente_conectado = false;
+        seguir_broadcast = true;
         Serial.println("Cliente desconectado.");
         velocidad_m1 = 0;
         velocidad_m2 = 0;

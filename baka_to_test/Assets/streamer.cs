@@ -15,7 +15,6 @@ public class MJPEGStreamWithAutoIP : MonoBehaviour
     public int streamPort = 8080;
 
     private Texture2D videoTexture;
-
     private string cameraIP;
     private bool found = false;
 
@@ -83,7 +82,7 @@ public class MJPEGStreamWithAutoIP : MonoBehaviour
 
         using (UnityWebRequest request = UnityWebRequest.Head(testUrl))
         {
-            request.timeout = 2; // Para mi phone alcanza con 1 seg, pero para el de luquitas requiere 2
+            request.timeout = 2;
 
             yield return request.SendWebRequest();
 
@@ -98,90 +97,93 @@ public class MJPEGStreamWithAutoIP : MonoBehaviour
         currentConcurrentRequests--;
     }
 
-// Esto se encarga del stream, basicamente maneja la conexion TCP para convertirlo a frams MJPEG, pero no conozco mucho de lo que pasa
- IEnumerator StartMJPEGStream()
-{
-    if (string.IsNullOrEmpty(cameraIP))
-        yield break;
-
-    string streamUrl = $"http://{cameraIP}:{streamPort}/video";
-
-    TcpClient client = new TcpClient();
-    NetworkStream stream = null;
-    System.IO.MemoryStream jpegData = new System.IO.MemoryStream();
-    byte[] buffer = new byte[4096];
-    bool connected = false;
-    bool errorOccurred = false;
-    string errorMsg = "";
-
-    try
+    IEnumerator StartMJPEGStream()
     {
-        Uri uri = new Uri(streamUrl);
-        client.Connect(uri.Host, uri.Port);
-        stream = client.GetStream();
+        if (string.IsNullOrEmpty(cameraIP))
+            yield break;
 
-        string request = $"GET {uri.PathAndQuery} HTTP/1.1\r\nHost: {uri.Host}\r\nConnection: close\r\n\r\n";
-        byte[] requestBytes = System.Text.Encoding.ASCII.GetBytes(request);
-        stream.Write(requestBytes, 0, requestBytes.Length);
+        string streamUrl = $"http://{cameraIP}:{streamPort}/video";
 
-        connected = true;
-    }
-    catch (Exception e)
-    {
-        errorOccurred = true;
-        errorMsg = e.Message;
-    }
+        TcpClient client = new TcpClient();
+        NetworkStream stream = null;
+        System.IO.MemoryStream jpegData = new System.IO.MemoryStream();
+        byte[] buffer = new byte[4096];
+        bool connected = false;
+        bool errorOccurred = false;
+        string errorMsg = "";
 
-    while (connected && !errorOccurred && client.Connected)
-    {
-        int bytesRead = 0;
         try
         {
-            bytesRead = stream.Read(buffer, 0, buffer.Length);
+            Uri uri = new Uri(streamUrl);
+            client.Connect(uri.Host, uri.Port);
+            stream = client.GetStream();
+
+            string request = $"GET {uri.PathAndQuery} HTTP/1.1\r\nHost: {uri.Host}\r\nConnection: close\r\n\r\n";
+            byte[] requestBytes = System.Text.Encoding.ASCII.GetBytes(request);
+            stream.Write(requestBytes, 0, requestBytes.Length);
+
+            connected = true;
         }
         catch (Exception e)
         {
             errorOccurred = true;
             errorMsg = e.Message;
-            break;
         }
 
-        if (bytesRead <= 0)
-            break;
-
-        jpegData.Write(buffer, 0, bytesRead);
-
-        byte[] dataArray = jpegData.ToArray();
-        int startIndex = FindSequence(dataArray, new byte[] { 0xFF, 0xD8 }); // SOI ?
-        int endIndex = FindSequence(dataArray, new byte[] { 0xFF, 0xD9 });   // EOI ? What is this black fuckery
-
-        if (startIndex >= 0 && endIndex > startIndex)
+        while (connected && !errorOccurred && client.Connected)
         {
-            int jpegLength = endIndex - startIndex + 2;
-            byte[] jpegFrame = new byte[jpegLength];
-            Array.Copy(dataArray, startIndex, jpegFrame, 0, jpegLength);
-
-            byte[] leftover = new byte[dataArray.Length - (startIndex + jpegLength)];
-            Array.Copy(dataArray, startIndex + jpegLength, leftover, 0, leftover.Length);
-            jpegData = new System.IO.MemoryStream();
-            jpegData.Write(leftover, 0, leftover.Length);
-
-            UnityMainThreadDispatcher.Instance().Enqueue(() =>
+            int bytesRead = 0;
+            try
             {
-                videoTexture.LoadImage(jpegFrame);
-                videoTexture.Apply();
-            });
+                bytesRead = stream.Read(buffer, 0, buffer.Length);
+            }
+            catch (Exception e)
+            {
+                errorOccurred = true;
+                errorMsg = e.Message;
+                break;
+            }
+
+            if (bytesRead <= 0)
+                break;
+
+            jpegData.Write(buffer, 0, bytesRead);
+
+            byte[] dataArray = jpegData.ToArray();
+            int startIndex = FindSequence(dataArray, new byte[] { 0xFF, 0xD8 });
+            int endIndex = FindSequence(dataArray, new byte[] { 0xFF, 0xD9 });
+
+            if (startIndex >= 0 && endIndex > startIndex)
+            {
+                int jpegLength = endIndex - startIndex + 2;
+                byte[] jpegFrame = new byte[jpegLength];
+                Array.Copy(dataArray, startIndex, jpegFrame, 0, jpegLength);
+
+                byte[] leftover = new byte[dataArray.Length - (startIndex + jpegLength)];
+                Array.Copy(dataArray, startIndex + jpegLength, leftover, 0, leftover.Length);
+                jpegData = new System.IO.MemoryStream();
+                jpegData.Write(leftover, 0, leftover.Length);
+
+                DateTime frameTime = DateTime.Now;
+                UnityMainThreadDispatcher.Instance().Enqueue(() =>
+                {
+                    // Si el frame es reciente (menos de 0.5s), lo mostramos
+                    if ((DateTime.Now - frameTime).TotalSeconds < 0.5)
+                    {
+                        videoTexture.LoadImage(jpegFrame);
+                        videoTexture.Apply();
+                    }
+                });
+            }
+
+            yield return null;
         }
 
-        yield return null;
+        client.Close();
+
+        if (errorOccurred)
+            Debug.LogError("Error en stream MJPEG: " + errorMsg);
     }
-
-    client.Close();
-
-    if (errorOccurred)
-        Debug.LogError("Error en stream MJPEG: " + errorMsg);
-}
-
 
     int FindSequence(byte[] array, byte[] sequence)
     {
@@ -201,7 +203,6 @@ public class MJPEGStreamWithAutoIP : MonoBehaviour
         return -1;
     }
 
-    //Obtener IP de red desde el quest
     string GetLocalIPAddress()
     {
         var host = System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName());
