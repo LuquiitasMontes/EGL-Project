@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System;
 
 public class QuestWebSocketClient : MonoBehaviour
 {
@@ -15,6 +16,7 @@ public class QuestWebSocketClient : MonoBehaviour
     public int udpPort = 8888; // El mismo que en el ESP32
     private bool websocketConnected = false;
     private string receivedIp = "";
+    private string messageReceived = "";
 
     void Start()
     {
@@ -32,18 +34,21 @@ public class QuestWebSocketClient : MonoBehaviour
         UdpClient udpClient = new UdpClient(udpPort);
         IPEndPoint remoteEP = new IPEndPoint(IPAddress.Any, udpPort);
 
-        while (string.IsNullOrEmpty(receivedIp))
+
+        while (!String.Equals(messageReceived,"cart here"))
         {
             try
             {
                 byte[] data = udpClient.Receive(ref remoteEP);
-                receivedIp = Encoding.UTF8.GetString(data).Trim();
+                messageReceived = Encoding.UTF8.GetString(data).Trim();
+                receivedIp =  remoteEP.Address.ToString();
 
                 Debug.Log("IP recibida por UDP: " + receivedIp);
                 mytexto.text = "ESP IP: " + receivedIp;
 
                 // Iniciar conexion con WebSocket
-                ConnectToWebSocket("ws://" + receivedIp + ":81");
+                if (String.Equals(messageReceived,"cart here"))
+                	ConnectToWebSocket("ws://" + receivedIp + ":81");
 
             }
             catch (SocketException ex)

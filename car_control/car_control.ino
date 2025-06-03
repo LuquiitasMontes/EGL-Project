@@ -116,12 +116,11 @@ void tareaMotores(void * pvParameters) {
 void tareaBroadcast(void * pvParameters) {
   while(1) {
     if (seguir_broadcast) {
-      IPAddress ip = WiFi.localIP(); // Obtener direccion del esp32
-      String msg = ip.toString();
+      String msg = "cart here";
       udp.beginPacket(IPAddress(255, 255, 255, 255), udpPort);
       udp.print(msg);
       udp.endPacket();
-      Serial.println("Broadcast IP: " + msg);
+      Serial.println("Broadcast: " + msg);
     }
     delay(500);
   }
