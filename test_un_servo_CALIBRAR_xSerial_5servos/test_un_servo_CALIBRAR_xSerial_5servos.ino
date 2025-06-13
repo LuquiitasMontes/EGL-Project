@@ -12,14 +12,14 @@ ServoEasing Servo3AtPCA9685(PCA9685_DEFAULT_ADDRESS);  // Codo
 ServoEasing Servo4AtPCA9685(PCA9685_DEFAULT_ADDRESS);  // Muñeca
 ServoEasing Servo5AtPCA9685(PCA9685_DEFAULT_ADDRESS);  // Gripper
 
-const int startDegreeServo1 = 90;  // Hombro 1 0º - 115º
-const int startDegreeServo2 = 90;  // Hombro 2 0º - 180º
-const int startDegreeServo3 = 90;  // Codo     0º - 125º
-const int startDegreeServo4 = 0;   // Muñeca   0º - 180º
-const int startDegreeServo5 = 35;  // Gripper 35º Cerrrado - 115º Abierto
+const int startDegreeServo1 = 90;  // Hombro 1  0º - 115º
+const int startDegreeServo2 = 90;  // Hombro 2  10º - 180º
+const int startDegreeServo3 = 90;  // Codo      0º - 125º
+const int startDegreeServo4 = 0;   // Muñeca    0º - 180º
+const int startDegreeServo5 = 35;  // Gripper   35º Cerrrado - 115º Abierto
 
 // VELOCIDAD Servos
-int vel_servos = 50;
+int vel_servos = 30;
 
 // Arreglo de punteros a los servos así:
 ServoEasing* servos[] = { &Servo1AtPCA9685, &Servo2AtPCA9685, &Servo3AtPCA9685, &Servo4AtPCA9685, &Servo5AtPCA9685 };
