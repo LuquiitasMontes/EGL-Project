@@ -18,6 +18,13 @@ public class WebSocketClientArm1 : MonoBehaviour
     private string receivedIp = "";
     private string messageReceived = "";
 
+    // Para el bracito
+    private bool triggerNow;
+    private bool triggerPressed = false;
+
+    private Vector3 home;
+    private Vector3 currentPos;
+
     void Start()
     {
         _inputData = GetComponent<InputData>();
@@ -86,15 +93,34 @@ public class WebSocketClientArm1 : MonoBehaviour
         ws.ConnectAsync();
     }
 
-    void Update()
+       void Update()
     {
         if (!websocketConnected) return;
 
-        Vector3 pos;
-        _inputData._rightController.TryGetFeatureValue(CommonUsages.devicePosition, out pos);
-        ws.Send(pos[1].ToString());
-        mytexto.SetText(pos[1].ToString());
-	}
+        
+        _inputData._rightController.TryGetFeatureValue(CommonUsages.triggerButton, out triggerNow);
+
+        if (triggerNow && !triggerPressed)
+        {
+            // Trigger recién presionado → registrar posición home
+            _inputData._rightController.TryGetFeatureValue(CommonUsages.devicePosition, out home);
+            triggerPressed = true;
+            mytexto.text = "Home set: " + home.ToString("F2");
+        }
+        else if (triggerNow && triggerPressed)
+        {
+            // Trigger mantenido → actualizar posición actual
+            _inputData._rightController.TryGetFeatureValue(CommonUsages.devicePosition, out currentPos);
+            ws.Send(currentPos.ToString("F2")); // mandás la posición actual
+            mytexto.text = "Actual: " + currentPos.ToString("F2");
+        }
+        else if (!triggerNow && triggerPressed)
+        {
+            // Trigger liberado
+            triggerPressed = false;
+            mytexto.text = "Trigger soltado.";
+        }
+    }
 
 
     void OnApplicationQuit()
