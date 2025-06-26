@@ -21,6 +21,7 @@ public class WebSocketClientArm1 : MonoBehaviour
     // Para el bracito
     private bool triggerNow;
     private bool triggerPressed = false;
+    private string lastDireccion = "";
 
     private Vector3 home;
     private Vector3 currentPos;
@@ -109,11 +110,47 @@ public class WebSocketClientArm1 : MonoBehaviour
         }
         else if (triggerNow && triggerPressed)
         {
-            // Trigger mantenido → actualizar posición actual
-            _inputData._rightController.TryGetFeatureValue(CommonUsages.devicePosition, out currentPos);
-            ws.Send(currentPos.ToString("F2")); // mandás la posición actual
-            mytexto.text = "Actual: " + currentPos.ToString("F2");
-        }
+		    _inputData._rightController.TryGetFeatureValue(CommonUsages.devicePosition, out currentPos);
+
+		    
+		    Vector3 delta = currentPos - home;
+
+
+		    string direccion = "";
+		    float absX = Mathf.Abs(delta.x);
+		    float absY = Mathf.Abs(delta.y);
+		    float absZ = Mathf.Abs(delta.z);
+
+		    if (absX >= absY && absX >= absZ)
+		    {
+		        direccion = delta.x > 0 ? "Derecha" : "Izquierda";
+		    }
+		    else if (absY >= absX && absY >= absZ)
+		    {
+		        direccion = delta.y > 0 ? "Arriba" : "Abajo";
+		    }
+		    else
+		    {
+		        direccion = delta.z > 0 ? "Adelante" : "Atrás";
+		    }
+
+		    float maxDelta = Mathf.Max(absX, Mathf.Max(absY, absZ));
+			float threshold = 0.1f; // 10 cm
+			
+			if (maxDelta <= threshold)
+			{
+				direccion = "Quieto";
+				lastDireccion = direccion;
+				mytexto.text = $"Dir: {direccion}\nΔ: {delta.ToString("F2")}";
+			}
+
+			else if (direccion != lastDireccion && maxDelta >= threshold)
+			{
+			    ws.Send(direccion);
+			    lastDireccion = direccion;
+			    mytexto.text = $"Dir: {direccion}\nΔ: {delta.ToString("F2")}";
+			}
+		}
         else if (!triggerNow && triggerPressed)
         {
             // Trigger liberado
