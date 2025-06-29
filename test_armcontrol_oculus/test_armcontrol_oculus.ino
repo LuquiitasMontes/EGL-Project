@@ -20,18 +20,21 @@ int s1_min = 0 , s1_max = 115 , s1_pos = startDegreeServo1;
 const int startDegreeServo2 = 90;  // Hombro 2  10º - 180º
 int s2_min = 0 , s2_max = 175 , s2_pos = startDegreeServo2;
 const int startDegreeServo3 = 90;  // Codo      0º - 125º
-int s3_min = 0 , s3_max = 130 , s3_pos = startDegreeServo3;
+int s3_min = 0 , s3_max = 140 , s3_pos = startDegreeServo3;
 const int startDegreeServo4 = 0;   // Muñeca    0º - 180º
 int s4_min = 0 , s4_max = 180 , s4_pos = startDegreeServo4;
-const int startDegreeServo5 = 35;  // Gripper   35º Cerrrado - 115º Abierto
-int s5_cerrado = 0 , s5_abierto = 115 , s5_pos = startDegreeServo5;
+const int startDegreeServo5 = 115;  // Gripper   35º Cerrrado - 115º Abierto
+int s5_cerrado = 35 , s5_abierto = 115 , s5_pos = startDegreeServo5;
 // VELOCIDAD Servos
-int vel_servos = 10;
+int vel_servos = 6;
 // Arreglo de punteros a los servos así:
 ServoEasing* servos[] = { &Servo1AtPCA9685, &Servo2AtPCA9685, &Servo3AtPCA9685, &Servo4AtPCA9685, &Servo5AtPCA9685 };
 const int NUM_SERVOS = 5;
-int movimiento = 15;
-
+int movimiento = 3;
+//Pal gripper
+double gripValue = 0;
+int lastgrip = 0;
+volatile int moviendo = 0;
 // ---VARIABLES CONEXION---
 using namespace websockets;
 
@@ -54,6 +57,8 @@ void tareaMotores(void * pvParameters);
 void tareaServidor(void * pvParameters);
 void tareaBroadcast(void * pvParameters);
 void procesarComando(String comando);
+
+
 
 void setup() {
   Serial.begin(115200);
@@ -100,11 +105,8 @@ void setup() {
   // Tareas
   xTaskCreatePinnedToCore(tareaServidor, "TareaServidor", 5000, NULL, 1, NULL, 1);   // Core 1
   xTaskCreatePinnedToCore(tareaBroadcast, "TareaBroadcast", 4000, NULL, 1, NULL, 1); // Core 1
+  xTaskCreatePinnedToCore(tareaMotores, "TareaMotores", 4000, NULL, 1, NULL, 0); // Core 0
 
-}
-
-void loop() {
-  // put your main code here, to run repeatedly:
 }
 
 
@@ -139,7 +141,79 @@ void tareaServidor(void * pvParameters) {
   }
 }
 
+void loop()
+{
+  
+}
 
+void tareaMotores(void * pvParameters)
+{
+  //Estados
+  // 0 - Detenido
+  // 1 - Moviendo adelante
+  // 2 - Moviendo atras
+  // 3 - moviendo arriba
+  // 4 - moviendo abajo
+  // 5 - moviendo izquierda
+  // 6 - moviendo derecha
+ while(1)
+ {
+    switch (moviendo)
+    {
+      case 1:
+        s2_pos -= movimiento;
+        if (s2_pos < s2_min)
+        {
+          s2_pos = s2_min;
+        }
+        servos[1]->write(s2_pos);
+        break;
+      case 2:
+        s2_pos += movimiento;
+        if (s2_pos > s2_max)
+        {
+          s2_pos = s2_max;
+        }
+        servos[1]->write(s2_pos);
+        break;
+      case 3:
+        s3_pos -= movimiento;
+        if (s3_pos < s3_min)
+        {
+          s3_pos = s3_min;
+        }
+        servos[2]->write(s3_pos);
+        break;
+      case 4:
+        s3_pos += movimiento;
+        if (s3_pos > s3_max)
+        {
+          s3_pos = s3_max;
+        }
+        servos[2]->write(s3_pos);
+        break;
+      case 5:
+        s4_pos -= movimiento;
+        if (s4_pos < s4_min)
+        {
+          s4_pos = s4_min;
+        }
+        servos[3]->write(s4_pos);
+        break;
+      case 6:
+        s4_pos += movimiento;
+        if (s4_pos > s4_max)
+        {
+          s4_pos = s4_max;
+        }
+        servos[3]->write(s4_pos);
+        break;
+      
+    }
+    delay(30);
+ }
+  
+}
 
 void tareaBroadcast(void * pvParameters) {
   while(1) {
@@ -162,56 +236,37 @@ void procesarComando(String comando) {
   } else {
     Serial.println(comando);
     if (comando == "Quieto"){
-
+        moviendo = 0;
     }
     else if (comando == "Adelante"){
-      s2_pos = s2_pos - movimiento;
-      if (s2_pos < s2_min)
-      {
-        s2_pos = s2_min;
-      }
-      servos[1]->startEaseTo(s2_pos);
+      moviendo = 1;
     }
     else if (comando == "Atrás"){
-      s2_pos = s2_pos + movimiento;
-           if (s2_pos > s2_max)
-      {
-        s2_pos = s2_max;
-      }
-      servos[1]->startEaseTo(s2_pos);
+      moviendo = 2;
     }
-    else if if (comando == "Arriba"){
-       s3_pos = s3_pos + movimiento;
-              if (s3_pos > s3_max)
-      {
-        s3_pos = s3_max;
-      }
-      servos[2]->startEaseTo(s3_pos);
+    else if  (comando == "Arriba"){
+      moviendo = 4;
     }
-      else if if (comando == "Abajo"){
-      s3_pos = s3_pos - movimiento;
-      if (s3_pos < s3_min)
-      {
-        s3_pos = s3_min;
-      }
-      servos[2]->startEaseTo(s3_pos);
+    else if  (comando == "Abajo"){
+      moviendo = 3;
     }
-      else if if (comando == "Derecha"){
-      s4_pos = s4_pos + movimiento;
-              if (s4_pos > s4_max)
-      {
-        s4_pos = s4_max;
-      }
-      servos[3]->startEaseTo(s4_pos);
+    else if  (comando == "Derecha"){
+      moviendo = 6;
     }
-      else if if (comando == "Izquierda"){
-      s4_pos = s4_pos - movimiento;
-            if (s4_pos < s4_min)
-      {
-        s4_pos = s4_min;
-      }
-      servos[3]->startEaseTo(s4_pos);
+    else if  (comando == "Izquierda"){
+      moviendo = 5;
     }
+    else {
+      gripValue = comando.toFloat();
+      if (gripValue != lastgrip)
+      {
+        int angulo = 115 - int(80 * gripValue);
+        servos[4]->write(angulo); // Asi lei que era mas responsivo
+        lastgrip = gripValue;
+      }
+      
+    }
+  
   }
 }
 

@@ -20,6 +20,7 @@ public class MJPEGStreamWithAutoIP : MonoBehaviour
     private Texture2D videoTexture;
     private string cameraIP;
     private bool found = false;
+    private bool isReconnecting = false;
 
     private int maxConcurrentRequests = 20;
     private int currentConcurrentRequests = 0;
@@ -162,21 +163,29 @@ public class MJPEGStreamWithAutoIP : MonoBehaviour
                 byte[] jpegFrame = new byte[jpegLength];
                 Array.Copy(dataArray, startIndex, jpegFrame, 0, jpegLength);
 
-                byte[] leftover = new byte[dataArray.Length - (startIndex + jpegLength)];
-                Array.Copy(dataArray, startIndex + jpegLength, leftover, 0, leftover.Length);
+                // DESCARTA TODO LO ANTERIOR AL FRAME ACTUAL (modo agresivo)
                 jpegData = new System.IO.MemoryStream();
-                jpegData.Write(leftover, 0, leftover.Length);
+                int leftoverStart = endIndex + 2;
+                if (leftoverStart < dataArray.Length)
+                    jpegData.Write(dataArray, leftoverStart, dataArray.Length - leftoverStart);
 
                 DateTime frameTime = DateTime.Now;
                 UnityMainThreadDispatcher.Instance().Enqueue(() =>
                 {
-                    // Si el frame es reciente (menos de 0.5s), lo mostramos
-                    if ((DateTime.Now - frameTime).TotalSeconds < 0.5)
+                    if ((DateTime.Now - frameTime).TotalSeconds < 0.2)
                     {
                         videoTexture.LoadImage(jpegFrame);
                         videoTexture.Apply();
                     }
                 });
+            }
+            else
+            {
+                if (jpegData.Length > 512000)
+                {
+                    jpegData = new System.IO.MemoryStream();
+                    Debug.LogWarning("Buffer limpiado por exceso sin JPEG válido (modo agresivo)");
+                }
             }
 
             yield return null;
@@ -185,7 +194,43 @@ public class MJPEGStreamWithAutoIP : MonoBehaviour
         client.Close();
 
         if (errorOccurred)
+        {
             Debug.LogError("Error en stream MJPEG: " + errorMsg);
+        }
+        else
+        {
+            Debug.LogWarning("Conexión cerrada con la cámara MJPEG");
+        }
+
+        // Reintento automático
+        if (!isReconnecting)
+        {
+            isReconnecting = true;
+            StartCoroutine(ReconnectAfterDelay(3f)); // Esperar 3 segundos
+        }
+    }
+
+    IEnumerator ReconnectAfterDelay(float seconds)
+    {
+        if (statusText != null)
+            statusText.text = $"Reconectando en {seconds} segundos...";
+
+        yield return new WaitForSeconds(seconds);
+
+        if (statusText != null)
+            statusText.text = "Reconectando...";
+
+        if (!string.IsNullOrEmpty(cameraIP))
+        {
+            Debug.Log("Intentando reconectar al stream MJPEG...");
+            StartCoroutine(StartMJPEGStream());
+        }
+        else
+        {
+            Debug.LogWarning("No se puede reconectar: IP de cámara no disponible.");
+        }
+
+        isReconnecting = false;
     }
 
     int FindSequence(byte[] array, byte[] sequence)

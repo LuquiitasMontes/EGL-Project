@@ -21,7 +21,10 @@ public class WebSocketClientArm1 : MonoBehaviour
     // Para el bracito
     private bool triggerNow;
     private bool triggerPressed = false;
-    private string lastDireccion = "";
+    private string lastDireccion = "Quieto";
+    private float gripValue = 0;
+    private float lastgrip = 0;
+
 
     private Vector3 home;
     private Vector3 currentPos;
@@ -100,6 +103,7 @@ public class WebSocketClientArm1 : MonoBehaviour
 
         
         _inputData._rightController.TryGetFeatureValue(CommonUsages.triggerButton, out triggerNow);
+        
 
         if (triggerNow && !triggerPressed)
         {
@@ -137,10 +141,11 @@ public class WebSocketClientArm1 : MonoBehaviour
 		    float maxDelta = Mathf.Max(absX, Mathf.Max(absY, absZ));
 			float threshold = 0.1f; // 10 cm
 			
-			if (maxDelta <= threshold)
+			if (direccion != lastDireccion && maxDelta <= threshold)
 			{
 				direccion = "Quieto";
 				lastDireccion = direccion;
+				ws.Send("Quieto");
 				mytexto.text = $"Dir: {direccion}\nΔ: {delta.ToString("F2")}";
 			}
 
@@ -155,8 +160,25 @@ public class WebSocketClientArm1 : MonoBehaviour
         {
             // Trigger liberado
             triggerPressed = false;
-            mytexto.text = "Trigger soltado.";
+            mytexto.text = "Trigger soltao.";
+            ws.Send("Quieto");
         }
+        else
+        {
+        	// For the gripper
+        	_inputData._rightController.TryGetFeatureValue(CommonUsages.grip, out gripValue);
+        	if (Mathf.Abs(lastgrip - gripValue) > 0.05f)
+        	{
+        		mytexto.text = gripValue.ToString("F2");
+        		ws.Send(gripValue.ToString("F2"));
+        		lastgrip = gripValue;
+        	}
+        	
+        }
+
+        
+        
+
     }
 
 
