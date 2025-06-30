@@ -210,7 +210,7 @@ void tareaMotores(void * pvParameters)
         break;
       
     }
-    delay(30);
+    delay(40);
  }
   
 }
