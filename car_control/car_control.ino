@@ -25,11 +25,12 @@ bool seguir_broadcast = true;
 #define DIR_PIN_M1 19
 #define STEP_PIN_M2 21
 #define DIR_PIN_M2 22
-#define SERVO_PIN  23
+#define SERVO_PIN  32
 
 // Motores
 AccelStepper motor1(AccelStepper::DRIVER, STEP_PIN_M1, DIR_PIN_M1);
 AccelStepper motor2(AccelStepper::DRIVER, STEP_PIN_M2, DIR_PIN_M2);
+ServoEasing miServo;
 
 // Velocidades
 volatile int velocidad_m1 = 0;
