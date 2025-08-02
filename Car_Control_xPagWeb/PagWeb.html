@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Control ESP32</title>
+</head>
+<body>
+  <h2>Enviar mensaje al ESP32</h2>
+  <input type="text" id="mensaje" placeholder="Escribí un mensaje">
+  <button onclick="enviar()">Enviar</button>
+
+  <p id="estado">Estado: Desconectado</p>
+
+  <script>
+    const estado = document.getElementById("estado");
+    const socket = new WebSocket("ws://192.168.53.206:81"); // Cambiá IP
+
+    socket.onopen = () => estado.textContent = "Estado: Conectado ✅";
+    socket.onclose = () => estado.textContent = "Estado: Desconectado ❌";
+    socket.onerror = () => estado.textContent = "Estado: Error ⚠️";
+
+    function enviar() {
+      const mensaje = document.getElementById("mensaje").value;
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(mensaje);
+      }
+    }
+  </script>
+</body>
+</html>
