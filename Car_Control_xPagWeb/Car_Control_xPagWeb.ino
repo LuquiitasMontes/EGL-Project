@@ -1,0 +1,126 @@
+// COMUNICACION
+#include <WiFi.h>
+#include <ArduinoWebsockets.h>
+// MOTORES
+#include <AccelStepper.h>
+
+using namespace websockets;
+// ⚙️ Configuración de tu red WiFi
+const char* ssid = "Lodisa";
+const char* password = "lucas123";
+// Iniciamos servidor WebSocket
+WebsocketsServer server;
+WebsocketsClient client;
+bool cliente_conectado = false;
+
+// Pines motores
+#define STEP_PIN_M1 18
+#define DIR_PIN_M1 19
+#define STEP_PIN_M2 21
+#define DIR_PIN_M2 22
+// Motores
+AccelStepper motor1(AccelStepper::DRIVER, STEP_PIN_M1, DIR_PIN_M1);
+AccelStepper motor2(AccelStepper::DRIVER, STEP_PIN_M2, DIR_PIN_M2);
+// Velocidades
+volatile int velocidad_m1 = 0;
+volatile int velocidad_m2 = 0;
+int vel_value = 1000;
+
+void setup() {
+  Serial.begin(115200);
+  WiFi.begin(ssid, password);
+  Serial.print("Conectando a WiFi");
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("\n✅ Conectado a WiFi!");
+  Serial.print("IP local: ");
+  Serial.println(WiFi.localIP());
+
+  server.listen(81);
+  Serial.println("🟢 Servidor WebSocket iniciado en puerto 81");
+
+  // Tareas
+  xTaskCreatePinnedToCore(tareaServidor, "TareaServidor", 5000, NULL, 1, NULL, 1);   // Core 1
+  xTaskCreatePinnedToCore(tareaMotores, "TareaMotores", 5000, NULL, 2, NULL, 0);     // Core 0
+
+  motor1.setAcceleration(400);  // O cualquier valor apropiado para tu sistema
+  motor2.setAcceleration(400);
+}
+
+void loop() {}
+
+void tareaServidor(void * pvParameters) {
+  while(1) {
+    server.poll();
+
+    if (!cliente_conectado && server.poll()) {
+      client = server.accept();
+      cliente_conectado = true;
+      Serial.println("Cliente conectado.");
+    }
+
+    if (cliente_conectado) {
+      if (client.available()) {
+        WebsocketsMessage msg = client.readBlocking();
+        String comando = msg.data();
+        Serial.println("Mensaje recibido: " + comando);
+        comando.trim();
+        procesarComando(comando);
+      }
+
+      if (!client.available()) {
+        // Frenar el carro en caso de desconexion
+        cliente_conectado = false;
+        Serial.println("Cliente desconectado.");
+        velocidad_m1 = 0;
+        velocidad_m2 = 0;
+        motor1.setSpeed(0);
+        motor2.setSpeed(0);
+      }
+    }
+
+    delay(1);
+  }
+}
+
+void tareaMotores(void * pvParameters) {
+  while(1) {
+    motor1.runSpeed();
+    motor2.runSpeed();
+    delay(0); 
+  }
+}
+
+void procesarComando(String comando) {
+  //Hay que modificar esta lista de comandos para que sea más escalable o prolija
+  if (comando == "F") {
+    velocidad_m1 = vel_value;
+    velocidad_m2 = -vel_value;
+
+  } else if (comando == "B") {
+    velocidad_m1 = -vel_value;
+    velocidad_m2 = vel_value;
+
+  } else if (comando == "A") {
+    velocidad_m1 = 0;
+    velocidad_m2 = 0;
+
+  } else if (comando == "R") {
+    velocidad_m1 = -vel_value;
+    velocidad_m2 = -vel_value;
+
+  } else if (comando == "L") {
+    velocidad_m1 = vel_value;
+    velocidad_m2 = vel_value;
+
+  }  else {
+    Serial.println("Comando no reconocido.");
+  }
+  // Configurar velocidades
+  motor1.setSpeed(velocidad_m1);
+  motor2.setSpeed(velocidad_m2);
+}
